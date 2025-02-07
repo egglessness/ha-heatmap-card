@@ -25,21 +25,25 @@ export class HeatmapCard extends LitElement {
     if (!this.grid || !this.grid.length) {
       this.grid = [];
     }
+    // Use a resolution (in minutes) specified in config; default is 60 (i.e. hourly)
+    const resolution = this.config.resolution || 60;
+    const binsPerHour = 60 / resolution;
+    const totalBins = 24 * binsPerHour;
 
-    // Auto-calculate start and end hour based on non-zero measurements in the grid
-    let autoStartHour = 24;
-    let autoEndHour = 0;
+    // Auto-calculate start and end bin based on non-zero measurements
+    let autoStartBin = totalBins;
+    let autoEndBin = 0;
     this.grid.forEach((entry) => {
-      entry.vals.forEach((val, hour) => {
+      entry.vals.forEach((val, idx) => {
         if (val && Number(val) !== 0) {
-          autoStartHour = Math.min(autoStartHour, hour);
-          autoEndHour = Math.max(autoEndHour, hour);
+          autoStartBin = Math.min(autoStartBin, idx);
+          autoEndBin = Math.max(autoEndBin, idx);
         }
       });
     });
-    if (autoStartHour === 24) {
-      autoStartHour = 0;
-      autoEndHour = 23;
+    if (autoStartBin === totalBins) {
+      autoStartBin = 0;
+      autoEndBin = totalBins - 1;
     }
 
     return html`
@@ -53,7 +57,7 @@ export class HeatmapCard extends LitElement {
                     "ui.dialogs.helper_settings.input_datetime.date"
                   )}
                 </th>
-                ${this.date_table_headers(autoStartHour, autoEndHour)}
+                ${this.date_table_headers(autoStartBin, autoEndBin, resolution)}
               </tr>
             </thead>
             <tbody>
@@ -63,12 +67,8 @@ export class HeatmapCard extends LitElement {
                     <td class="hm-row-title">${entry.date}</td>
                     ${(() => {
                       let cells = [];
-                      for (
-                        let hour = autoStartHour;
-                        hour <= autoEndHour;
-                        hour++
-                      ) {
-                        let util = entry.vals[hour];
+                      for (let idx = autoStartBin; idx <= autoEndBin; idx++) {
+                        let util = entry.vals[idx];
                         let css_class = "hm-box";
                         let r = util;
                         if (r === null) {
@@ -85,16 +85,14 @@ export class HeatmapCard extends LitElement {
                           }
                         }
                         const col = this.meta.scale.gradient(r);
-                        cells.push(
-                          html`<td
-                            @click="${this.toggle_tooltip}"
-                            class="${css_class}"
-                            data-val="${util}"
-                            data-row="${row}"
-                            data-col="${hour}"
-                            style="color: ${col}"
-                          ></td>`
-                        );
+                        cells.push(html` <td
+                          @click="${this.toggle_tooltip}"
+                          class="${css_class}"
+                          data-val="${util}"
+                          data-row="${row}"
+                          data-bin="${idx}"
+                          style="color: ${col}"
+                        ></td>`);
                       }
                       return cells;
                     })()}
@@ -103,27 +101,31 @@ export class HeatmapCard extends LitElement {
             </tbody>
           </table>
           ${this.render_status()} ${this.render_legend()}
-          ${this.render_tooltip()}
+          ${this.render_tooltip(resolution)}
         </div>
       </ha-card>
     `;
   }
 
-  date_table_headers(startHour, endHour) {
+  date_table_headers(startBin, endBin, resolution) {
     let headers = [];
-    if (this.myhass.locale.time_format === "12") {
-      for (let h = startHour; h <= endHour; h++) {
-        const dt = new Date(1970, 0, 1, h);
-        headers.push(
-          html`<th>
-            ${dt.toLocaleString("en-US", { hour: "numeric", hour12: true })}
-          </th>`
-        );
+    for (let idx = startBin; idx <= endBin; idx++) {
+      const minutesTotal = idx * resolution;
+      const hour = Math.floor(minutesTotal / 60);
+      const minute = minutesTotal % 60;
+      let timeStr = "";
+      if (this.myhass.locale.time_format === "12") {
+        const dt = new Date(1970, 0, 1, hour, minute);
+        timeStr = dt.toLocaleString("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        });
+      } else {
+        timeStr =
+          String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
       }
-    } else {
-      for (let h = startHour; h <= endHour; h++) {
-        headers.push(html`<th>${String(h).padStart(2, "0")}</th>`);
-      }
+      headers.push(html`<th>${timeStr}</th>`);
     }
     return headers;
   }
@@ -161,16 +163,24 @@ export class HeatmapCard extends LitElement {
     `;
   }
 
-  render_tooltip() {
-    var content = "";
+  render_tooltip(resolution) {
+    let content = "";
     if (this.selected_element_data) {
-      const date = this.grid[this.selected_element_data.row]?.date;
-      const hr = parseInt(this.selected_element_data.col);
-      var from = new Date("2022-03-20 00:00:00");
-      from.setHours(hr);
-      var to = new Date("2022-03-20 00:00:00");
-      to.setHours(hr + 1);
-      var rendered_value;
+      const row = this.selected_element_data.row;
+      const bin = parseInt(this.selected_element_data.bin);
+      const date = this.grid[row]?.date;
+      // Calculate the start and end times for this bin
+      const minutesTotal = bin * resolution;
+      const hour = Math.floor(minutesTotal / 60);
+      const minute = minutesTotal % 60;
+      const from = new Date("2022-03-20 00:00:00");
+      from.setHours(hour, minute);
+      const toMinutes = minutesTotal + resolution;
+      const toHour = Math.floor(toMinutes / 60);
+      const toMinute = toMinutes % 60;
+      const to = new Date("2022-03-20 00:00:00");
+      to.setHours(toHour, toMinute);
+      let rendered_value;
       if (this.selected_element_data.val === "") {
         rendered_value = this.myhass.localize(
           "ui.components.data-table.no-data"
@@ -181,39 +191,46 @@ export class HeatmapCard extends LitElement {
           this.meta.scale.unit || this.meta.unit_of_measurement
         }`;
       }
-      var time_format = new Intl.DateTimeFormat("sv-SE", {
+      let time_format = new Intl.DateTimeFormat("sv-SE", {
         hour: "numeric",
         minute: "numeric",
       });
-      if (this.myhass.locale.time_format == "12") {
-        time_format = new Intl.DateTimeFormat("en-US", { hour: "numeric" });
+      if (this.myhass.locale.time_format === "12") {
+        time_format = new Intl.DateTimeFormat("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        });
       }
-      content = html`<div class="meta">
+      content = html`
+        <div class="meta">
           ${date} ${time_format.format(from)} - ${time_format.format(to)}
         </div>
-        <div class="value">${rendered_value}</div>`;
+        <div class="value">${rendered_value}</div>
+      `;
     }
-    return html`
-      <div id="tooltip" class="${this.tooltipOpen ? "active" : "hidden"}">
-        ${content}
-      </div>
-    `;
+    return html`<div
+      id="tooltip"
+      class="${this.tooltipOpen ? "active" : "hidden"}"
+    >
+      ${content}
+    </div>`;
   }
 
   legend_scale(scale) {
-    var ticks = [];
+    let ticks = [];
     if (scale.type === "relative") {
-      var diff = this.meta.data.max - this.meta.data.min;
-      for (var i = 0; i <= 5; i++) {
+      const diff = this.meta.data.max - this.meta.data.min;
+      for (let i = 0; i <= 5; i++) {
         ticks.push([
           i * 20,
           +Number(this.meta.data.min + (diff / 5) * i).toFixed(2),
         ]);
       }
     } else {
-      var min = scale.steps[0].value;
-      var max = scale.steps[scale.steps.length - 1].value;
-      var span = max - min;
+      const min = scale.steps[0].value;
+      const max = scale.steps[scale.steps.length - 1].value;
+      const span = max - min;
       for (const entry of scale.steps) {
         ticks.push([((entry.value - min) / span) * 100, entry.value]);
       }
@@ -235,13 +252,32 @@ export class HeatmapCard extends LitElement {
     }
     this.tooltipOpen = true;
     target.id = "selected";
-    var rect = target.getBoundingClientRect();
-    var cardRect = card.getBoundingClientRect();
-    var top = rect.top - cardRect.top;
-    var left = rect.left - cardRect.left;
+    const rect = target.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const top = rect.top - cardRect.top;
+    const left = rect.left - cardRect.left;
     tooltip.style.top = (top - 50 - rect.height).toString() + "px";
     tooltip.style.left = (left - rect.width / 2 - 70).toString() + "px";
     this.selected_element_data = target.dataset;
+  }
+
+  // Helper to interpolate an array of 24 hourly values into finer bins
+  interpolateValues(hourlyVals, resolution) {
+    const binsPerHour = 60 / resolution;
+    const interpolated = [];
+    for (let h = 0; h < hourlyVals.length; h++) {
+      const current = hourlyVals[h] !== null ? Number(hourlyVals[h]) : 0;
+      const next =
+        h < hourlyVals.length - 1 && hourlyVals[h + 1] !== null
+          ? Number(hourlyVals[h + 1])
+          : current;
+      for (let i = 0; i < binsPerHour; i++) {
+        const t = i / binsPerHour;
+        const value = current + (next - current) * t;
+        interpolated.push(value);
+      }
+    }
+    return interpolated;
   }
 
   set hass(hass) {
@@ -250,7 +286,7 @@ export class HeatmapCard extends LitElement {
     }
     this.myhass = hass;
     this.meta = this.populate_meta(hass);
-    var consumers = [this.config.entity];
+    const consumers = [this.config.entity];
     this.get_recorder(consumers, this.config.days);
     this.last_render_ts = Date.now();
   }
@@ -258,7 +294,7 @@ export class HeatmapCard extends LitElement {
   get_recorder(consumers, days) {
     const now = new Date();
     this.grid_status = undefined;
-    var startTime = new Date(now - days * 86400000);
+    const startTime = new Date(now - days * 86400000);
     startTime.setHours(23, 0, 0);
     this.myhass
       .callWS({
@@ -312,7 +348,7 @@ export class HeatmapCard extends LitElement {
   }
 
   max_from(grid) {
-    var vals = [];
+    let vals = [];
     for (const entry of grid) {
       vals = vals.concat(entry.vals);
     }
@@ -320,7 +356,7 @@ export class HeatmapCard extends LitElement {
   }
 
   min_from(grid) {
-    var vals = [];
+    let vals = [];
     for (const entry of grid) {
       vals = vals.concat(entry.vals);
     }
@@ -328,53 +364,73 @@ export class HeatmapCard extends LitElement {
   }
 
   calculate_measurement_values(consumerData) {
-    var grid = [];
-    var gridTemp = [];
-    var prevDate = null;
-    var hour;
+    const resolution = this.config.resolution || 60;
+    let grid = [];
+    let hourlyValues = Array(24).fill(null);
+    let prevDate = null;
     for (const entry of consumerData) {
       const start = new Date(entry.start);
-      hour = start.getHours();
+      const hour = start.getHours();
       const dateRep = start.toLocaleDateString(this.meta.language, {
         month: "short",
         day: "2-digit",
       });
       if (dateRep !== prevDate && prevDate !== null) {
-        gridTemp = Array(24).fill(null);
-        grid.push({ date: dateRep, nativeDate: start, vals: gridTemp });
+        let vals = hourlyValues;
+        if (resolution < 60) {
+          vals = this.interpolateValues(hourlyValues, resolution);
+        }
+        grid.push({ date: prevDate, nativeDate: start, vals: vals });
+        hourlyValues = Array(24).fill(null);
       }
-      gridTemp[hour] = entry.mean;
+      hourlyValues[hour] = entry.mean;
       prevDate = dateRep;
     }
-    gridTemp.splice(hour + 1);
+    if (prevDate !== null) {
+      let vals = hourlyValues;
+      if (resolution < 60) {
+        vals = this.interpolateValues(hourlyValues, resolution);
+      }
+      grid.push({ date: prevDate, nativeDate: new Date(), vals: vals });
+    }
     return grid.reverse();
   }
 
   calculate_increasing_values(consumerData) {
-    var grid = [];
-    var prev = null;
-    var gridTemp = [];
-    var prevDate = null;
-    var hour;
+    const resolution = this.config.resolution || 60;
+    let grid = [];
+    let prev = null;
+    let hourlyValues = Array(24).fill(0);
+    let prevDate = null;
     for (const entry of consumerData) {
       const start = new Date(entry.start);
-      hour = start.getHours();
+      const hour = start.getHours();
       const dateRep = start.toLocaleDateString(this.meta.language, {
         month: "short",
         day: "2-digit",
       });
       if (dateRep !== prevDate && prev !== null) {
-        gridTemp = Array(24).fill(0);
-        grid.push({ date: dateRep, nativeDate: start, vals: gridTemp });
+        let vals = hourlyValues;
+        if (resolution < 60) {
+          vals = this.interpolateValues(hourlyValues, resolution);
+        }
+        grid.push({ date: prevDate, nativeDate: start, vals: vals });
+        hourlyValues = Array(24).fill(0);
       }
       if (prev !== null) {
-        var util = (entry.sum - prev).toFixed(2);
-        gridTemp[hour] = util;
+        const util = (entry.sum - prev).toFixed(2);
+        hourlyValues[hour] = util;
       }
       prev = entry.sum;
       prevDate = dateRep;
     }
-    gridTemp.splice(hour + 1);
+    if (prevDate !== null) {
+      let vals = hourlyValues;
+      if (resolution < 60) {
+        vals = this.interpolateValues(hourlyValues, resolution);
+      }
+      grid.push({ date: prevDate, nativeDate: new Date(), vals: vals });
+    }
     return grid.reverse();
   }
 
@@ -382,7 +438,7 @@ export class HeatmapCard extends LitElement {
     const consumerAttributes = hass.states[this.config.entity].attributes;
     const device_class =
       consumerAttributes.device_class ?? this.config.device_class;
-    var meta = {
+    return {
       unit_of_measurement: consumerAttributes.unit_of_measurement,
       state_class: consumerAttributes.state_class,
       device_class: device_class,
@@ -402,7 +458,6 @@ export class HeatmapCard extends LitElement {
         min: this.config.data.min,
       },
     };
-    return meta;
   }
 
   setConfig(config) {
@@ -419,6 +474,7 @@ export class HeatmapCard extends LitElement {
       scale: config.scale,
       data: config.data ?? {},
       display: config.display ?? {},
+      resolution: config.resolution || 60,
     };
     if (
       this.config.data.max !== undefined &&
