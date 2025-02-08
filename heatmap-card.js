@@ -1998,7 +1998,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
         entry.vals.forEach((val, idx) => {
           if (val && Number(val) !== 0) {
             autoStartBin = Math.floor(Math.min(autoStartBin, idx) / 12) * 12;
-            autoEndBin = Math.ceil(Math.max(autoEndBin, idx) / 12) * 12 - 1;
+            autoEndBin = Math.ceil(Math.max(autoEndBin, idx) / 12) * 12;
           }
         });
       });
