@@ -2384,7 +2384,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
         scale: config.scale,
         data: config.data ?? {},
         display: config.display ?? {},
-        resolution: config.resolution || 60
+        resolution: config.resolution || 5
       };
       if (this.config.data.max !== void 0 && this.config.data.max !== "auto" && typeof this.config.data.max !== "number") {
         throw new Error("`data.max` need to be either `auto` or a number");

@@ -475,7 +475,7 @@ export class HeatmapCard extends LitElement {
       scale: config.scale,
       data: config.data ?? {},
       display: config.display ?? {},
-      resolution: config.resolution || 60,
+      resolution: config.resolution || 5,
     };
     if (
       this.config.data.max !== undefined &&
