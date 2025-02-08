@@ -52,7 +52,10 @@ export class HeatmapCard extends LitElement {
         <div class="card-content">
           <table>
             <thead>
-              <tr class="hr${this.myhass.locale.time_format}">
+              <tr
+                class="hr${this.myhass.locale.time_format}"
+                style="line-height: 1.5"
+              >
                 <th class="hm-row-title"></th>
                 ${this.date_table_headers(autoStartBin, autoEndBin, resolution)}
               </tr>
@@ -309,7 +312,6 @@ export class HeatmapCard extends LitElement {
         types: ["sum", "mean"],
       })
       .then((recorderResponse) => {
-        debugger;
         for (const consumer of consumers) {
           const consumerData = recorderResponse[consumer];
           if (consumerData === undefined) {
@@ -552,14 +554,12 @@ export class HeatmapCard extends LitElement {
     /* Legend */
     .legend-container {
       margin-top: 20px;
-      width: 80%;
+      width: 83%;
       margin-left: auto;
-      margin-right: 5%;
       position: relative;
     }
     .tick-container {
       position: relative;
-      left: -10px;
     }
     #legend {
       height: 10px;
