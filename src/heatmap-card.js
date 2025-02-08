@@ -300,7 +300,7 @@ export class HeatmapCard extends LitElement {
       .callWS({
         type: "recorder/statistics_during_period",
         statistic_ids: consumers,
-        period: "hour",
+        period: "5minute",
         units: {
           energy: "kWh",
           temperature: this.myhass.config.unit_system.temperature,
