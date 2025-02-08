@@ -2085,7 +2085,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
           }
           headers.push(html`<th>${timeStr}</th>`);
         } else {
-          headers.push(html`<th></th>`);
+          headers.push(html`<th>•</th>`);
         }
       }
       return headers;

@@ -128,7 +128,7 @@ export class HeatmapCard extends LitElement {
         }
         headers.push(html`<th>${timeStr}</th>`);
       } else {
-        headers.push(html`<th></th>`);
+        headers.push(html`<th>•</th>`);
       }
     }
     return headers;
