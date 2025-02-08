@@ -114,21 +114,22 @@ export class HeatmapCard extends LitElement {
       const minutesTotal = idx * resolution;
       const hour = Math.floor(minutesTotal / 60);
       const minute = minutesTotal % 60;
-      if (minute != 0) {
-        continue;
-      }
-      let timeStr = "";
-      if (this.myhass.locale.time_format === "12") {
-        const dt = new Date(1970, 0, 1, hour, minute);
-        timeStr = dt.toLocaleString("en-US", {
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-        });
+      if (minute == 0) {
+        let timeStr = "";
+        if (this.myhass.locale.time_format === "12") {
+          const dt = new Date(1970, 0, 1, hour, minute);
+          timeStr = dt.toLocaleString("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          });
+        } else {
+          timeStr = String(hour);
+        }
+        headers.push(html`<th>${timeStr}</th>`);
       } else {
-        timeStr = String(hour);
+        headers.push(html`<th></th>`);
       }
-      headers.push(html`<th>${timeStr}</th>`);
     }
     return headers;
   }
