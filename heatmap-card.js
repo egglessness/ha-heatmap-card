@@ -79,7 +79,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`}
           ${this.render_tooltip(c)}
         </div>
       </ha-card>
-    `}date_table_headers(c,p,m){let b=[];for(let _=c;_<=p;_++){let k=_*m,A=Math.floor(k/60),R=k%60;if(R==0){let C="";this.myhass.locale.time_format==="12"?C=new Date(1970,0,1,A,R).toLocaleString("en-US",{hour:"numeric",minute:"numeric",hour12:!0}):C=String(A),b.push(ae`<th>${C}</th>`)}else b.push(ae`<th>•</th>`)}return b}render_status(){if(this.grid_status)return ae`<h3>${this.grid_status}</h3>`}render_legend(){if(this.config.display.legend===!1)return;let c=this.legend_scale(this.meta.scale);return ae`
+    `}date_table_headers(c,p,m){let b=[];for(let _=c;_<=p;_++){let k=_*m,A=Math.floor(k/60),R=k%60;if(R==0){let C="";this.myhass.locale.time_format==="12"?C=new Date(1970,0,1,A,R).toLocaleString("en-US",{hour:"numeric",minute:"numeric",hour12:!0}):C=String(A),b.push(ae`<th>${C}</th>`)}else R%10==0?b.push(ae`<th>•</th>`):b.push(ae`<th></th>`)}return b}render_status(){if(this.grid_status)return ae`<h3>${this.grid_status}</h3>`}render_legend(){if(this.config.display.legend===!1)return;let c=this.legend_scale(this.meta.scale);return ae`
       <div class="legend-container">
         <div
           id="legend"
