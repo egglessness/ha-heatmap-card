@@ -309,6 +309,7 @@ export class HeatmapCard extends LitElement {
         types: ["sum", "mean"],
       })
       .then((recorderResponse) => {
+        debugger;
         for (const consumer of consumers) {
           const consumerData = recorderResponse[consumer];
           if (consumerData === undefined) {
