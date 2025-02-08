@@ -2071,7 +2071,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
         const minutesTotal = idx * resolution;
         const hour = Math.floor(minutesTotal / 60);
         const minute = minutesTotal % 60;
-        if (minute == 0) {
+        if (minute != 0) {
           continue;
         }
         let timeStr = "";

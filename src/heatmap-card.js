@@ -114,7 +114,7 @@ export class HeatmapCard extends LitElement {
       const minutesTotal = idx * resolution;
       const hour = Math.floor(minutesTotal / 60);
       const minute = minutesTotal % 60;
-      if (minute == 0) {
+      if (minute != 0) {
         continue;
       }
       let timeStr = "";
