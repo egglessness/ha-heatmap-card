@@ -378,9 +378,9 @@ export class HeatmapCard extends LitElement {
       });
       if (dateRep !== prevDate && prevDate !== null) {
         let vals = hourlyValues;
-        if (resolution < 60) {
+        /* if (resolution < 60) {
           vals = this.interpolateValues(hourlyValues, resolution);
-        }
+        } */
         grid.push({ date: prevDate, nativeDate: start, vals: vals });
         hourlyValues = Array(288).fill(null);
       }
@@ -389,9 +389,9 @@ export class HeatmapCard extends LitElement {
     }
     if (prevDate !== null) {
       let vals = hourlyValues;
-      if (resolution < 60) {
+      /* if (resolution < 60) {
         vals = this.interpolateValues(hourlyValues, resolution);
-      }
+      } */
       grid.push({ date: prevDate, nativeDate: new Date(), vals: vals });
     }
     return grid.reverse();

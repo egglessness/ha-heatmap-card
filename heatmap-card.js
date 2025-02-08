@@ -2295,9 +2295,6 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
         });
         if (dateRep !== prevDate && prevDate !== null) {
           let vals = hourlyValues;
-          if (resolution < 60) {
-            vals = this.interpolateValues(hourlyValues, resolution);
-          }
           grid.push({ date: prevDate, nativeDate: start, vals });
           hourlyValues = Array(288).fill(null);
         }
@@ -2306,9 +2303,6 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`
       }
       if (prevDate !== null) {
         let vals = hourlyValues;
-        if (resolution < 60) {
-          vals = this.interpolateValues(hourlyValues, resolution);
-        }
         grid.push({ date: prevDate, nativeDate: /* @__PURE__ */ new Date(), vals });
       }
       return grid.reverse();
