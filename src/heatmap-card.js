@@ -38,7 +38,7 @@ export class HeatmapCard extends LitElement {
         if (val && Number(val) !== 0) {
           // Approximate to the nearest whole hour
           autoStartBin = Math.floor(Math.min(autoStartBin, idx) / 12) * 12;
-          autoEndBin = Math.ceil(Math.max(autoEndBin, idx) / 12) * 12;
+          autoEndBin = Math.ceil(Math.max(autoEndBin, idx) / 12) * 12 - 1;
         }
       });
     });
