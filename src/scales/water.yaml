@@ -1,0 +1,7 @@
+name: Water
+type: relative
+steps:
+  - value: 0
+    color: "#3ea8ee00"
+  - value: 1
+    color: "#3ea8eeff"

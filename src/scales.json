@@ -630,6 +630,21 @@
     "unit": "\u00b5g/m\u00b3"
   },
   {
+    "key": "water",
+    "name": "Water",
+    "steps": [
+      {
+        "color": "#3ea8ee00",
+        "value": 0
+      },
+      {
+        "color": "#3ea8eeff",
+        "value": 1
+      }
+    ],
+    "type": "relative"
+  },
+  {
     "key": "white hot",
     "name": "White hot",
     "steps": [

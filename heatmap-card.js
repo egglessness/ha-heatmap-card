@@ -1725,6 +1725,21 @@ the heatmap.</p>`
       unit: "\xB5g/m\xB3"
     },
     {
+      key: "water",
+      name: "Water",
+      steps: [
+        {
+          color: "#3ea8ee00",
+          value: 0
+        },
+        {
+          color: "#3ea8eeff",
+          value: 1
+        }
+      ],
+      type: "relative"
+    },
+    {
       key: "white hot",
       name: "White hot",
       steps: [
