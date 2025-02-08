@@ -541,7 +541,7 @@ export class HeatmapCard extends LitElement {
       text-align: left;
       max-height: 20px;
       min-width: 50px;
-      width: 50px;
+      width: 15%;
     }
     .hm-box {
       background-color: currentcolor;

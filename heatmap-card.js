@@ -139,7 +139,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`}
       text-align: left;
       max-height: 20px;
       min-width: 50px;
-      width: 50px;
+      width: 15%;
     }
     .hm-box {
       background-color: currentcolor;
