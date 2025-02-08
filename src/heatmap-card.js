@@ -53,11 +53,7 @@ export class HeatmapCard extends LitElement {
           <table>
             <thead>
               <tr class="hr${this.myhass.locale.time_format}">
-                <th class="hm-row-title">
-                  ${this.myhass.localize(
-                    "ui.dialogs.helper_settings.input_datetime.date"
-                  )}
-                </th>
+                <th class="hm-row-title"></th>
                 ${this.date_table_headers(autoStartBin, autoEndBin, resolution)}
               </tr>
             </thead>

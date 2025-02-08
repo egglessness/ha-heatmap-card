@@ -54,9 +54,7 @@ Slightly modified by setting the minimum to -60\xB0C, instead of -90\xB0C.</p>`}
           <table>
             <thead>
               <tr class="hr${this.myhass.locale.time_format}">
-                <th class="hm-row-title">
-                  ${this.myhass.localize("ui.dialogs.helper_settings.input_datetime.date")}
-                </th>
+                <th class="hm-row-title"></th>
                 ${this.date_table_headers(b,_,c)}
               </tr>
             </thead>
