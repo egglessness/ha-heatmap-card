@@ -367,11 +367,11 @@ export class HeatmapCard extends LitElement {
   calculate_measurement_values(consumerData) {
     const resolution = this.config.resolution || 60;
     let grid = [];
-    let hourlyValues = Array(24).fill(null);
+    let hourlyValues = Array(288).fill(null);
     let prevDate = null;
     for (const entry of consumerData) {
       const start = new Date(entry.start);
-      const hour = start.getHours();
+      const hour = start.getHours() * 12 + start.getMinutes() / 5;
       const dateRep = start.toLocaleDateString(this.meta.language, {
         month: "short",
         day: "2-digit",
@@ -382,7 +382,7 @@ export class HeatmapCard extends LitElement {
           vals = this.interpolateValues(hourlyValues, resolution);
         }
         grid.push({ date: prevDate, nativeDate: start, vals: vals });
-        hourlyValues = Array(24).fill(null);
+        hourlyValues = Array(288).fill(null);
       }
       hourlyValues[hour] = entry.mean;
       prevDate = dateRep;
