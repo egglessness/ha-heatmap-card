@@ -623,6 +623,10 @@ export class HeatmapCard extends LitElement {
       font-size: 90%;
     }
   `;
+
+  static getConfigElement() {
+    return document.createElement("heatmap-card-editor");
+  }
 }
 
-customElements.define("heatmap-card", HeatmapCard);
+//customElements.define("heatmap-card", HeatmapCard);
